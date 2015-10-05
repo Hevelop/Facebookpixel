@@ -1,0 +1,15 @@
+{
+    "name": "hevelop/facebookpixel",
+    "license": "OSL-3.0",
+    "type": "magento-module",
+    "description": "Facebook Pixel tracking",
+    "require": {
+        "magento-hackathon/magento-composer-installer": "*"
+    },
+    "authors":[
+        {
+            "name":"Alex Bordin",
+            "email":"alex@hevelop.com"
+        }
+    ]
+}

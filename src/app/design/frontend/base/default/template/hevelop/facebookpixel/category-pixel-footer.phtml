@@ -1,0 +1,7 @@
+<?php if (Mage::helper('hevelop_facebookpixel')->isEnabled()): ?>
+    <?php $pixelId = Mage::helper('hevelop_facebookpixel')->getPixelId() ?>
+    <!-- Facebook Pixel Code Category -->
+    <script>
+        <?php echo $this->_getCategoryPixelCode() ?>
+    </script>
+<?php endif; ?>

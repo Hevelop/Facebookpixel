@@ -1,0 +1,5 @@
+src/app/code/community/Hevelop/FacebookPixel     app/code/community/Hevelop/FacebookPixel
+src/app/etc/modules/Hevelop_FacebookPixel.xml    app/etc/modules/Hevelop_FacebookPixel.xml
+src/app/design/frontend/base/default/layout/hevelop/facebookpixel.xml    app/design/frontend/base/default/layout/hevelop/facebookpixel.xml
+src/app/design/frontend/base/default/template/hevelop/facebookpixel      app/design/frontend/base/default/template/hevelop/facebookpixel
+src/js/facebookpixel/facebookpixel.js   js/facebookpixel/facebookpixel.js
