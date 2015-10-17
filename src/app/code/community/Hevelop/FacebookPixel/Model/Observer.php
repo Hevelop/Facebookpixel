@@ -185,6 +185,7 @@ class Hevelop_FacebookPixel_Model_Observer
                             'price' => $price,
                             'qty' => $finalQty,
                             'currency' => Mage::app()->getStore()->getBaseCurrencyCode(),
+                            'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
                         );
                     }
             }
@@ -218,7 +219,8 @@ class Hevelop_FacebookPixel_Model_Observer
                     'sku' => $item->getSku(),
                     'name' => $item->getName(),
                     'price' => $item->getPrice(),
-                    'qty' => $item->getQty()
+                    'qty' => $item->getQty(),
+                    'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
                 );
             }
         } else {
@@ -226,7 +228,8 @@ class Hevelop_FacebookPixel_Model_Observer
                 'sku' => $quoteItem->getSku(),
                 'name' => $quoteItem->getName(),
                 'price' => $quoteItem->getProduct()->getPrice(),
-                'qty' => $quoteItem->getQty()
+                'qty' => $quoteItem->getQty(),
+                'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
             );
         }
         Mage::unregister('facebookpixel_products_to_remove');

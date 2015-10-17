@@ -8,6 +8,7 @@ class Hevelop_FacebookPixel_Helper_Data extends Mage_Core_Helper_Abstract
 
     const XML_PATH_ENABLE = 'hevelopfacebookpixel/general/enabled';
     const XML_PATH_PIXEL_ID = 'hevelopfacebookpixel/general/pixelid';
+    const XML_PATH_PRODUCT_CATALOG_ID = 'hevelopfacebookpixel/general/product_catalog_id';
 
     const PRODUCT_QUANTITIES_BEFORE_ADDTOCART = 'prev_product_qty';
 
@@ -24,6 +25,21 @@ class Hevelop_FacebookPixel_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         return $pixelId;
+    }
+
+    /**
+     * If Facebook Pixel is enable return product catalog id
+     * @return mixed|null|int
+     */
+    public function getProductCatalogId()
+    {
+        $productCatalogId = null;
+
+        if ($this->isEnabled()) {
+            $productCatalogId = Mage::getStoreConfig(self::XML_PATH_PRODUCT_CATALOG_ID);
+        }
+
+        return $productCatalogId;
     }
 
     /**

@@ -44,6 +44,15 @@
                             <show_in_store>1</show_in_store>
                             <validate>validate-number</validate>
                         </pixelid>
+                        <product_catalog_id translate="label comment" module="hevelop_facebookpixel">
+                            <label>Product Catalog id</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <validate>validate-number</validate>
+                        </product_catalog_id>
                     </fields>
                 </general>
             </groups>

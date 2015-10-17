@@ -198,7 +198,7 @@
             content_type: 'product',
             value: productsIn[i].price,
             currency: productsIn[i].currency,
-            product_catalog_id: productsIn[i].id
+            product_catalog_id: productsIn[i].product_catalog_id
           };
         }
       }

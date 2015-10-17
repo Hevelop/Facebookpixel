@@ -32,7 +32,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
                 array_push($productIds, $product->getId());
             }
             $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . $currCat->getName()
-                . "', content_ids: [" . implode(',', $productIds) . "], content_type: 'product_group', product_catalog_id: " . $currCat->getId() . "});";
+                . "', content_ids: [" . implode(',', $productIds) . "], content_type: 'product_group', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
         return $pixelCat;
     }
@@ -143,7 +143,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
             if ($currCat = $this->getCurrentCategory()) {
                 $pixelProd .= ", content_category: '" . $currCat->getName() . "'";
             }
-            $pixelProd .= ", content_ids: [" . $product->getId() . "], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', product_catalog_id: " . $product->getId() . "});";
+            $pixelProd .= ", content_ids: [" . $product->getId() . "], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
         return $pixelProd;
     }
@@ -174,7 +174,9 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
                 'value', $order->getBaseGrandTotal(),
                 'currency', Mage::app()->getStore()->getBaseCurrencyCode(),
                 'num_items', count($order->getAllVisibleItems()),
-                'order_id', $order->getIncrementId());
+                'order_id', $order->getIncrementId(),
+                'product_catalog_id', Mage::helper('hevelop_facebookpixel')->getProductCatalogId()
+            );
         }
         return implode("\n", $result);
     }
