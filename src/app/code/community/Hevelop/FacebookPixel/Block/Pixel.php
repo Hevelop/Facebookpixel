@@ -32,7 +32,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
                 array_push($productIds, $product->getId());
             }
             $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . $currCat->getName()
-                . "', content_ids: [" . implode(',', $productIds) . "], content_type: 'product_group', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+                . "', content_ids: [" . implode(',', $productIds) . "], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
         return $pixelCat;
     }
