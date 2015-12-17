@@ -8,6 +8,12 @@
 */
 -->
 <config>
+    <tabs>
+        <hevelop translate="label" module="hevelop_facebookpixel">
+            <label>Hevelop</label>
+            <sort_order>200</sort_order>
+        </hevelop>
+    </tabs>
     <sections>
         <hevelopfacebookpixel translate="label comment" module="hevelop_facebookpixel">
             <label>Facebook Pixel</label>
