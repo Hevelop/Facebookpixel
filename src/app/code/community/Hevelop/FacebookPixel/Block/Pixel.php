@@ -37,6 +37,21 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
         return $pixelCat;
     }
 
+    protected function _getSearchPixelCode()
+    {
+        $pixelSearch = '';
+        $term = Mage::helper('catalogsearch')->getQueryText();
+        if ($term) {
+            $products = $this->_getProductCollection();
+            $productIds = array();
+            foreach ($products as $product) {
+                array_push($productIds, $product->getId());
+            }
+            $pixelSearch = "fbq('track', 'Search', {content_ids: [" . implode(',', $productIds) . "], content_type: 'product_group', search_string: " . json_encode($term) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+        }
+        return $pixelSearch;
+    }
+
     /**
      * Retrieves a current category
      *
@@ -111,7 +126,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
         $this->_productCollection->setCurPage($this->getCurrentPage());
 
         // we need to set pagination only if passed value integer and more that 0
-        $limit = (int)Mage_Catalog_Block_Product_List_Toolbar::getLimit();
+        $limit = (int)$this->getListBlock()->getToolbarBlock()->getLimit();
         if ($limit) {
             $this->_productCollection->setPageSize($limit);
         }
