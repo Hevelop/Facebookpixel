@@ -3,14 +3,17 @@
 class Hevelop_FacebookPixel_Helper_Data extends Mage_Core_Helper_Abstract
 {
 
-    const COOKIE_ADD = 'facebookpixel_add';
-    const COOKIE_REMOVE = 'facebookpixel_remove';
+    const COOKIE_CART_ADD = 'facebookpixel_cart_add';
+    const COOKIE_CART_REMOVE = 'facebookpixel_cart_remove';
+
+    const COOKIE_WISHLIST_ADD = 'facebookpixel_wishlist_add';
 
     const XML_PATH_ENABLE = 'hevelopfacebookpixel/general/enabled';
     const XML_PATH_PIXEL_ID = 'hevelopfacebookpixel/general/pixelid';
     const XML_PATH_PRODUCT_CATALOG_ID = 'hevelopfacebookpixel/general/product_catalog_id';
 
     const PRODUCT_QUANTITIES_BEFORE_ADDTOCART = 'prev_product_qty';
+    const PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST = 'wishlist_prev_product_qty';
 
     /**
      * If Facebook Pixel is enable return pixel id

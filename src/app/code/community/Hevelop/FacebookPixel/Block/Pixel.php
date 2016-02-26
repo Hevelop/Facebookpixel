@@ -136,8 +136,8 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
 
     public function getListBlock()
     {
-        Mage::log('block name  ' . $this->getBlockName());
-        Mage::log('block name  ' . $this->getData('block_name'));
+        // Mage::log('block name  ' . $this->getBlockName());
+        // Mage::log('block name  ' . $this->getData('block_name'));
         return $this->getLayout()->getBlock($this->getData('block_name'));
     }
 

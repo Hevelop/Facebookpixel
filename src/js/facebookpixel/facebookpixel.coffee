@@ -1,5 +1,6 @@
-cookieAddToCart = 'facebookpixel_add'
-cookieRemoveFromCart = 'facebookpixel_remove'
+cookieAddToCart = 'facebookpixel_cart_add'
+cookieRemoveFromCart = 'facebookpixel_cart_remove'
+cookieAddToWishlist = 'facebookpixel_wishlist_add'
 googleAnalyticsUniversalData = googleAnalyticsUniversalData or 'shoppingCartContent': []
 
 getCookie = (name) ->
@@ -19,7 +20,7 @@ getCookie = (name) ->
   setStr
 
 delCookie = (name) ->
-  cookie = name + '=' + '; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; domain=.' + window.location.host
+  cookie = name + '=' + '; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; domain=' + Mage.Cookies.domain
   document.cookie = cookie
   return
 
@@ -167,6 +168,12 @@ FacebookPixelCart.prototype =
     fbq 'track', 'AddToCart', @formatProductsArray(@addedProducts) if fbq?
     @addedProducts = []
     return
+  wishlistItemAdded: ->
+    if @addedProducts.length == 0
+      return
+    fbq 'track', 'AddToWishlist', @formatProductsArray(@addedProducts) if fbq?
+    @addedProducts = []
+    return
   cartItemRemoved: ->
     if @removedProducts.length == 0
       return
@@ -181,6 +188,14 @@ FacebookPixelCart.prototype =
       delCookie cookieAddToCart
       @cartItemAdded()
     return
+  parseAddToWishlistCookies: ->
+    if getCookie(cookieAddToWishlist)
+      @addedProducts = []
+      addProductsList = decodeURIComponent(getCookie(cookieAddToWishlist))
+      @addedProducts = JSON.parse(addProductsList)
+      delCookie cookieAddToWishlist
+      @wishlistItemAdded()
+    return
   parseRemoveFromCartCookies: ->
     if getCookie(cookieRemoveFromCart)
       @removedProducts = []
@@ -193,5 +208,8 @@ facebookpixelcart = new FacebookPixelCart
 document.observe 'dom:loaded', ->
   facebookpixelcart.parseAddToCartCookies()
   facebookpixelcart.parseRemoveFromCartCookies()
+
+  facebookpixelcart.parseAddToWishlistCookies()
+
   #FacebookPixelCart.subscribeProductsUpdateInCart()
   return

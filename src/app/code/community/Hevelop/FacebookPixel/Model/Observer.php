@@ -239,6 +239,91 @@ class Hevelop_FacebookPixel_Model_Observer
     }
 
     /**
+     * Fired by wishlist_add_product event
+     *
+     * @param Varien_Event_Observer $observer
+     * @return $this
+     */
+    public function setFacebookPixelOnWishlistAdd(Varien_Event_Observer $observer)
+    {
+        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+            return $this;
+        }
+
+        // Mage::log($observer->getWishlist()->getItemCollection()->getSize());
+
+        Mage::register('wishlist_add_product', $observer->getProduct());
+
+
+        $products = Mage::registry('facebookpixel_products_addtowishlist');
+        if (!$products) {
+            $products = array();
+        }
+        $lastValues = array();
+        $session = Mage::getSingleton('checkout/session');
+        if ($session->hasData(
+            Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST
+        )
+        ) {
+            $lastValues = $session->getData(
+                Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST
+            );
+        }
+
+        $items = $observer->getWishlist()->getItemCollection();
+        /** @var Mage_Wishlist_Model_Item $item */
+        foreach ($items as $item) {
+
+            $id = $item->getProductId();
+            $parentQty = 1;
+            $price = $item->getProduct()->getPrice();
+            switch ($item->getProductType()) {
+                case 'configurable':
+                case 'bundle':
+                    break;
+                case 'grouped':
+                    $id = $item->getOptionByCode('product_type')->getProductId() . '-' .
+                        $item->getProductId();
+                // no break;
+                default:
+                    if ($item->getParentItem()) {
+                        $parentQty = $item->getParentItem()->getQty();
+                        $id = $item->getId() . '-' .
+                            $item->getParentItem()->getProductId() . '-' .
+                            $item->getProductId();
+
+                        if ($item->getParentItem()->getProductType() == 'configurable') {
+                            $price = $item->getParentItem()->getProduct()->getPrice();
+                        }
+                    }
+                    if ($item->getProductType() == 'giftcard') {
+                        $price = $item->getProduct()->getFinalPrice();
+                    }
+
+                    $oldQty = (array_key_exists($id, $lastValues)) ? $lastValues[$id] : 0;
+                    $finalQty = ($parentQty * $item->getQty()) - $oldQty;
+                    if ($finalQty != 0) {
+                        $products[] = array(
+                            'id' => $item->getProductId(),
+                            'sku' => $item->getSku(),
+                            'name' => $item->getName(),
+                            'price' => $price,
+                            'qty' => $finalQty,
+                            'currency' => Mage::app()->getStore()->getBaseCurrencyCode(),
+                            'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
+                        );
+                    }
+            }
+        }
+        Mage::unregister('facebookpixel_products_addtowishlist');
+        Mage::register('facebookpixel_products_addtowishlist', $products);
+        $session->unsetData(Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST);
+
+
+        return $this;
+    }
+
+    /**
      * Send cookies after cart action
      *
      * @param Varien_Event_Observer $observer
@@ -252,17 +337,52 @@ class Hevelop_FacebookPixel_Model_Observer
 
         $productsToAdd = Mage::registry('facebookpixel_products_addtocart');
         if (!empty($productsToAdd)) {
-            Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_ADD,
+            Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_ADD,
                 rawurlencode(json_encode($productsToAdd)), 0, '/', null, null, false);
         }
         $productsToRemove = Mage::registry('facebookpixel_products_to_remove');
         if (!empty($productsToRemove)) {
             Mage::app()->getCookie()->set(
-                Hevelop_FacebookPixel_Helper_Data::COOKIE_REMOVE,
+                Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_REMOVE,
                 rawurlencode(Mage::helper('core')->jsonEncode($productsToRemove)), 0, '/', null, null, false
             );
         }
         return $this;
+    }
+
+
+    /**
+     * Send cookies after wishlist action
+     *
+     * @param Varien_Event_Observer $observer
+     * @return $this
+     */
+    public function sendCookieOnWishlistActionComplete(Varien_Event_Observer $observer)
+    {
+        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+            return $this;
+        }
+        $productsToAdd = Mage::registry('facebookpixel_products_addtowishlist');
+        Mage::log($productsToAdd);
+        if (!empty($productsToAdd)) {
+            Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_WISHLIST_ADD,
+                rawurlencode(json_encode($productsToAdd)), 0, '/', null, null, false);
+        }
+        return $this;
+    }
+
+
+    /**
+     * Excute on post dispatch event
+     *
+     * @param Varien_Event_Observer $observer
+     * @return $this
+     */
+    public function facebookPixelPostDispatch(Varien_Event_Observer $observer){
+
+        $this->sendCookieOnCartActionComplete($observer);
+        $this->sendCookieOnWishlistActionComplete($observer);
+
     }
 
 

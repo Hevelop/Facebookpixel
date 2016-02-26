@@ -75,7 +75,7 @@
                 <observers>
                     <hevelop_facebookpixel_postdispatch>
                         <class>hevelop_facebookpixel/observer</class>
-                        <method>sendCookieOnCartActionComplete</method>
+                        <method>facebookPixelPostDispatch</method>
                     </hevelop_facebookpixel_postdispatch>
                 </observers>
             </controller_action_postdispatch>
@@ -87,6 +87,14 @@
                     </hevelop_facebookpixel_cart_remove>
                 </observers>
             </sales_quote_remove_item>
+            <wishlist_add_product>
+                <observers>
+                    <hevelop_facebookpixel_add_to_wishlist>
+                        <class>hevelop_facebookpixel/observer</class>
+                        <method>setFacebookPixelOnWishlistAdd</method>
+                    </hevelop_facebookpixel_add_to_wishlist>
+                </observers>
+            </wishlist_add_product>
         </events>
         <layout>
             <updates>

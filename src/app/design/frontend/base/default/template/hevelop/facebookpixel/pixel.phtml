@@ -23,10 +23,22 @@
 
         fbq('init', '<?php echo $pixelId?>');
         fbq('track', "PageView");
-        <?php echo $this->_getOrdersTrackingCode() ?>
+
+        <?php
+        $orderTracking = $this->_getOrdersTrackingCode();
+        ?>
+        <?php if($orderTracking):?>
+
+        // order tracking
+        <?php echo $orderTracking ?>
+        // order tracking
+        
+        <?php endif; ?>
+
+
     </script>
     <noscript><img height="1" width="1" style="display:none"
                    src="https://www.facebook.com/tr?id=<?php echo $pixelId ?>&ev=PageView&noscript=1"
-            />
+        />
     </noscript>
 <?php endif; ?>
