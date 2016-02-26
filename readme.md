@@ -1,45 +1,36 @@
 Hevelop FacebookPixel Extension
 =====================
-Add your description here
+
+Magento 1 module for Facebook Conversion Tracking and Custom Audience [Facebook Developer Documentation](https://developers.facebook.com/docs/marketing-api/facebook-pixel/v2.5)
+
 Facts
 -----
-- version: 1.0.0
+- version: 1.2.0
 - extension key: Hevelop_FacebookPixel
-- [extension on Magento Connect](http://www.magentocommerce.com/magento-connect/hevelop)-facebookpixel-1234.html)
-- Magento Connect 1.0 extension key: magento-community/Hevelop_FacebookPixel
-- Magento Connect 2.0 extension key: http://connect20.magentocommerce.com/community/Hevelop_FacebookPixel
-- [extension on GitHub](https://github.com/hevelop/Hevelop_FacebookPixel)
-- [direct download link](http://connect.magentocommerce.com/community/get/Hevelop_FacebookPixel-1.0.0.tgz)
-
-Description
------------
-This paragraph describes what the extension does.
+- [extension on GitHub](https://github.com/Hevelop/Facebookpixel)
+- [direct download link](https://github.com/Hevelop/Facebookpixel/archive/v1.2.0.zip)
 
 Requirements
 ------------
-- PHP >= 5.2.0
-- Mage_Core
-- ...
+- PHP >= 5.4.0
 
 Compatibility
 -------------
-- Magento >= 1.4
+- Magento >= 1.7
 
 Installation Instructions
 -------------------------
-1. Install the extension via Magento Connect with the key shown above or copy all the files into your document root.
+1. Install the extension via modman, composer or copy all the files into your document root.
 2. Clear the cache, logout from the admin panel and then login again.
-3. Configure and activate the extension under System - Configuration - Company - Example Extension.
-4. ...
+3. Configure and activate the extension under System - Configuration - Hevelop - Facebook Pixel.
 
 Uninstallation
 --------------
 1. Remove all extension files from your Magento installation
-2. ...
 
 Support
 -------
-If you have any issues with this extension, open an issue on [GitHub](https://github.com/hevelop/Hevelop_FacebookPixel/issues).
+If you have any issues with this extension, open an issue on [GitHub](https://github.com/Hevelop/Facebookpixel/issues).
 
 Contribution
 ------------
@@ -48,8 +39,12 @@ Any contribution is highly appreciated. The best way to contribute code is to op
 Developer
 ---------
 Alex Bordin
-[http://www.firstname-lastname.com](http://www.firstname-lastname.com)
-[@FirstNameLastName](https://twitter.com/FirstNameLastName)
+[http://hevelop.com](http://hevelop.com)
+[@bordeo](https://twitter.com/bordeo)
+
+Simone Marcato
+[http://hevelop.com](http://hevelop.com)
+[@SenorMarcatos](https://twitter.com/SenorMarcatos)
 
 Licence
 -------
@@ -57,4 +52,4 @@ Licence
 
 Copyright
 ---------
-(c) 2015 Hevelop
+(c) 2016 Hevelop
