@@ -1,6 +1,6 @@
-cookieAddToCart = 'facebookpixel_cart_add'
-cookieRemoveFromCart = 'facebookpixel_cart_remove'
-cookieAddToWishlist = 'facebookpixel_wishlist_add'
+cookieAddToCart = 'facebookPixelClass_cart_add'
+cookieRemoveFromCart = 'facebookPixelClass_cart_remove'
+cookieAddToWishlist = 'facebookPixelClass_wishlist_add'
 googleAnalyticsUniversalData = googleAnalyticsUniversalData or 'shoppingCartContent': []
 
 getCookie = (name) ->
@@ -24,7 +24,7 @@ delCookie = (name) ->
   document.cookie = cookie
   return
 
-FacebookPixelCart = ->
+FacebookPixelClass = ->
   @productQtys = []
   @origProducts = {}
   @productWithChanges = []
@@ -32,7 +32,8 @@ FacebookPixelCart = ->
   @removedProducts = []
   return
 
-FacebookPixelCart.prototype =
+FacebookPixelClass.prototype =
+
   subscribeProductsUpdateInCart: ->
     context = this
     $$('[data-cart-item-update]').each (element) ->
@@ -51,6 +52,7 @@ FacebookPixelCart.prototype =
         return
       return
     return
+
   emptyCartObserver: ->
     @collectOriginalProducts()
     for i of @origProducts
@@ -59,18 +61,21 @@ FacebookPixelCart.prototype =
         @removedProducts.push product
     @cartItemRemoved()
     return
+
   updateMulticartCartObserver: ->
     @collectMultiProductsWithChanges()
     @collectProductsForMessages()
     @cartItemAdded()
     @cartItemRemoved()
     return
+
   updateCartObserver: ->
     @collectProductsWithChanges()
     @collectProductsForMessages()
     @cartItemAdded()
     @cartItemRemoved()
     return
+
   collectMultiProductsWithChanges: ->
     @collectOriginalProducts()
     @collectMultiCartQtys()
@@ -91,6 +96,7 @@ FacebookPixelCart.prototype =
           product['qty'] = groupedProducts[j]
           @productWithChanges.push product
     return
+
   collectProductsWithChanges: ->
     @collectOriginalProducts()
     @collectCartQtys()
@@ -105,10 +111,12 @@ FacebookPixelCart.prototype =
           @productWithChanges.push product
       i++
     return
+
   collectOriginalProducts: ->
     if googleAnalyticsUniversalData and googleAnalyticsUniversalData['shoppingCartContent']
       @origProducts = googleAnalyticsUniversalData['shoppingCartContent']
     return
+
   collectMultiCartQtys: ->
     productQtys = []
     $$('[data-multiship-item-id]').each (element) ->
@@ -118,6 +126,7 @@ FacebookPixelCart.prototype =
       return
     @productQtys = productQtys
     return
+
   collectCartQtys: ->
     productQtys = []
     $$('[data-cart-item-id]').each (element) ->
@@ -127,6 +136,7 @@ FacebookPixelCart.prototype =
       return
     @productQtys = productQtys
     return
+
   collectProductsForMessages: ->
     @addedProducts = []
     @removedProducts = []
@@ -145,6 +155,7 @@ FacebookPixelCart.prototype =
           @removedProducts.push product
       i++
     return
+
   formatProductsArray: (productsIn) ->
     productsOut = []
     itemId = undefined
@@ -162,24 +173,28 @@ FacebookPixelCart.prototype =
           currency: productsIn[i].currency
           product_catalog_id: productsIn[i].product_catalog_id
     productsOut
+
   cartItemAdded: ->
     if @addedProducts.length == 0
       return
     fbq 'track', 'AddToCart', @formatProductsArray(@addedProducts) if fbq?
     @addedProducts = []
     return
+
   wishlistItemAdded: ->
     if @addedProducts.length == 0
       return
     fbq 'track', 'AddToWishlist', @formatProductsArray(@addedProducts) if fbq?
     @addedProducts = []
     return
+
   cartItemRemoved: ->
     if @removedProducts.length == 0
       return
     #remove cart item
     @removedProducts = []
     return
+
   parseAddToCartCookies: ->
     if getCookie(cookieAddToCart)
       @addedProducts = []
@@ -188,6 +203,7 @@ FacebookPixelCart.prototype =
       delCookie cookieAddToCart
       @cartItemAdded()
     return
+
   parseAddToWishlistCookies: ->
     if getCookie(cookieAddToWishlist)
       @addedProducts = []
@@ -196,6 +212,7 @@ FacebookPixelCart.prototype =
       delCookie cookieAddToWishlist
       @wishlistItemAdded()
     return
+
   parseRemoveFromCartCookies: ->
     if getCookie(cookieRemoveFromCart)
       @removedProducts = []
@@ -204,12 +221,49 @@ FacebookPixelCart.prototype =
       delCookie cookieRemoveFromCart
       @cartItemRemoved()
     return
-facebookpixelcart = new FacebookPixelCart
+
+  validateCheckoutForm: ()->
+
+    $inputs = $$('#billing-address [type="text"], #billing-address select')
+
+    valid = true
+
+    $inputs.each (el)->
+      $input = $(el)
+      v = $input.value
+
+      switch true
+        when $input.hasClassName 'validate-email'
+          valid = valid and (!Validation.get('IsEmpty').test(v) and /^([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9,!\#\$%&'\*\+\/=\?\^_`\{\|\}~-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*@([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z0-9-]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*\.(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]){2,})$/i.test(v))
+        when $input.hasClassName 'validate-password'
+          pass = v.strip()
+          valid = valid and !(pass.length > 0 and pass.length < 6)
+        when $input.hasClassName 'required-entry'
+          valid = valid and !Validation.get('IsEmpty').test(v)
+        else
+          break
+      return
+
+    console.log valid
+    if valid and not triggered
+      fbq 'track', 'AddPaymentInfo' if fbq?
+      triggered = true
+
+  onDomLoaded: ->
+
+    #FacebookPixel.subscribeProductsUpdateInCart()
+
+$f = window.FacebookPixel = new FacebookPixelClass
+
 document.observe 'dom:loaded', ->
-  facebookpixelcart.parseAddToCartCookies()
-  facebookpixelcart.parseRemoveFromCartCookies()
 
-  facebookpixelcart.parseAddToWishlistCookies()
-
-  #FacebookPixelCart.subscribeProductsUpdateInCart()
+  FacebookPixel.parseAddToCartCookies()
+  FacebookPixel.parseRemoveFromCartCookies()
+  FacebookPixel.parseAddToWishlistCookies()
+  if $$('#billing-address').length
+    $$('#billing-address :input').each((el)->
+      $(el).observe('change', FacebookPixel.validateCheckoutForm)
+    )
+  # for custom extension
+  FacebookPixel.onDomLoaded()
   return

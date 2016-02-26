@@ -79,7 +79,6 @@ class Hevelop_FacebookPixel_Helper_Data extends Mage_Core_Helper_Abstract
      */
     public function isCheckout()
     {
-
         $controller = Mage::app()->getRequest()->getControllerName();
         $action = Mage::app()->getRequest()->getActionName();
         $route = Mage::app()->getRequest()->getRouteName();
