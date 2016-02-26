@@ -352,6 +352,45 @@ class Hevelop_FacebookPixel_Model_Observer
         return $this;
     }
 
+    /**
+     * Fired by customer_register_success event
+     *
+     * @param Varien_Event_Observer $observer
+     * @return $this
+     */
+    public function setFacebookPixelOnCustomerRegisterSuccess(Varien_Event_Observer $observer)
+    {
+        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+            return $this;
+        }
+
+        $customer = $observer->getCustomer();
+        Mage::unregister('facebookpixel_customer_registered');
+        Mage::register('facebookpixel_customer_registered', $customer);
+
+        return $this;
+    }
+
+    /**
+     * Send cookies after new customer registration
+     *
+     * @param Varien_Event_Observer $observer
+     * @return $this
+     */
+    public function sendCookieOnCustomerRegisterSuccess(Varien_Event_Observer $observer)
+    {
+        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+            return $this;
+        }
+
+        $customer = Mage::registry('facebookpixel_customer_registered');
+        if (!empty($customer)) {
+            Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_CUSTOMER_REGISTER,
+                rawurlencode(json_encode($customer->getId())), 0, '/', null, null, false);
+        }
+        return $this;
+    }
+
 
     /**
      * Excute on post dispatch event
@@ -364,6 +403,7 @@ class Hevelop_FacebookPixel_Model_Observer
 
         $this->sendCookieOnCartActionComplete($observer);
         $this->sendCookieOnWishlistActionComplete($observer);
+        $this->sendCookieOnCustomerRegisterSuccess($observer);
 
     }
 

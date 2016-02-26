@@ -8,6 +8,8 @@ class Hevelop_FacebookPixel_Helper_Data extends Mage_Core_Helper_Abstract
 
     const COOKIE_WISHLIST_ADD = 'facebookpixel_wishlist_add';
 
+    const COOKIE_CUSTOMER_REGISTER = 'facebookpixel_customer_register';
+
     const XML_PATH_ENABLE = 'hevelopfacebookpixel/general/enabled';
     const XML_PATH_PIXEL_ID = 'hevelopfacebookpixel/general/pixelid';
     const XML_PATH_PRODUCT_CATALOG_ID = 'hevelopfacebookpixel/general/product_catalog_id';

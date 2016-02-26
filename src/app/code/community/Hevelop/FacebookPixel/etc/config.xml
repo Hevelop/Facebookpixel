@@ -95,6 +95,14 @@
                     </hevelop_facebookpixel_add_to_wishlist>
                 </observers>
             </wishlist_add_product>
+            <customer_register_success>
+                <observers>
+                    <hevelop_facebookpixel_customer_register_success>
+                        <class>hevelop_facebookpixel/observer</class>
+                        <method>setFacebookPixelOnCustomerRegisterSuccess</method>
+                    </hevelop_facebookpixel_customer_register_success>
+                </observers>
+            </customer_register_success>
         </events>
         <layout>
             <updates>

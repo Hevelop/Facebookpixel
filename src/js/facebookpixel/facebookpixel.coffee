@@ -1,6 +1,7 @@
 cookieAddToCart = 'facebookPixelClass_cart_add'
 cookieRemoveFromCart = 'facebookPixelClass_cart_remove'
 cookieAddToWishlist = 'facebookPixelClass_wishlist_add'
+cookieCustomerRegistered = 'facebookpixel_customer_register'
 googleAnalyticsUniversalData = googleAnalyticsUniversalData or 'shoppingCartContent': []
 
 getCookie = (name) ->
@@ -29,6 +30,7 @@ FacebookPixelClass = ->
   @origProducts = {}
   @productWithChanges = []
   @addedProducts = []
+  @customerId = false
   @removedProducts = []
   return
 
@@ -188,6 +190,13 @@ FacebookPixelClass.prototype =
     @addedProducts = []
     return
 
+  customerRegistered: ->
+    if !@customerId
+      return
+    fbq 'track', 'CompleteRegistration' if fbq?
+    @customerId = false
+    return
+
   cartItemRemoved: ->
     if @removedProducts.length == 0
       return
@@ -211,6 +220,15 @@ FacebookPixelClass.prototype =
       @addedProducts = JSON.parse(addProductsList)
       delCookie cookieAddToWishlist
       @wishlistItemAdded()
+    return
+
+  parseCustomerRegisteredCookies: ->
+    if getCookie(cookieCustomerRegistered)
+      @customerId = false
+      customerId = decodeURIComponent(getCookie(cookieCustomerRegistered))
+      @customerId = JSON.parse(customerId)
+      delCookie cookieCustomerRegistered
+      @customerRegistered()
     return
 
   parseRemoveFromCartCookies: ->
@@ -260,6 +278,7 @@ document.observe 'dom:loaded', ->
   FacebookPixel.parseAddToCartCookies()
   FacebookPixel.parseRemoveFromCartCookies()
   FacebookPixel.parseAddToWishlistCookies()
+  FacebookPixel.parseCustomerRegisteredCookies()
   if $$('#billing-address').length
     $$('#billing-address :input').each((el)->
       $(el).observe('change', FacebookPixel.validateCheckoutForm)
