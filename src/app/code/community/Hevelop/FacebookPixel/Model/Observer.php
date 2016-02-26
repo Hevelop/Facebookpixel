@@ -95,6 +95,61 @@ class Hevelop_FacebookPixel_Model_Observer
         return $this;
     }
 
+
+    /**
+     * Returns product info from a given item (quote or wishlist)
+     *
+     * @param mixed $item
+     * @param array $lastValues
+     * @return mixed $product
+     */
+    protected function _getProductFromItem($item, $lastValues)
+    {
+        $product = false;
+        $id = $item->getProductId();
+        $parentQty = 1;
+        $price = $item->getProduct()->getPrice();
+        switch ($item->getProductType()) {
+            case 'configurable':
+            case 'bundle':
+                break;
+            case 'grouped':
+                $id = $item->getOptionByCode('product_type')->getProductId() . '-' .
+                    $item->getProductId();
+            // no break;
+            default:
+                if ($item->getParentItem()) {
+                    $parentQty = $item->getParentItem()->getQty();
+                    $id = $item->getId() . '-' .
+                        $item->getParentItem()->getProductId() . '-' .
+                        $item->getProductId();
+
+                    if ($item->getParentItem()->getProductType() == 'configurable') {
+                        $price = $item->getParentItem()->getProduct()->getPrice();
+                    }
+                }
+                if ($item->getProductType() == 'giftcard') {
+                    $price = $item->getProduct()->getFinalPrice();
+                }
+
+                $oldQty = (array_key_exists($id, $lastValues)) ? $lastValues[$id] : 0;
+                $finalQty = ($parentQty * $item->getQty()) - $oldQty;
+                if ($finalQty != 0) {
+                    $product = array(
+                        'id' => $item->getProductId(),
+                        'sku' => $item->getSku(),
+                        'name' => $item->getName(),
+                        'price' => $price,
+                        'qty' => $finalQty,
+                        'currency' => Mage::app()->getStore()->getBaseCurrencyCode(),
+                        'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
+                    );
+                }
+        }
+
+        return $product;
+    }
+
     /**
      * When shopping cart is cleaned the remembered quantities in a session needs also to be deleted
      *
@@ -149,45 +204,9 @@ class Hevelop_FacebookPixel_Model_Observer
         $items = $observer->getEvent()->getItems();
         /** @var Mage_Sales_Model_Quote_Item $quoteItem */
         foreach ($items as $quoteItem) {
-            $id = $quoteItem->getProductId();
-            $parentQty = 1;
-            $price = $quoteItem->getProduct()->getPrice();
-            switch ($quoteItem->getProductType()) {
-                case 'configurable':
-                case 'bundle':
-                    break;
-                case 'grouped':
-                    $id = $quoteItem->getOptionByCode('product_type')->getProductId() . '-' .
-                        $quoteItem->getProductId();
-                // no break;
-                default:
-                    if ($quoteItem->getParentItem()) {
-                        $parentQty = $quoteItem->getParentItem()->getQty();
-                        $id = $quoteItem->getId() . '-' .
-                            $quoteItem->getParentItem()->getProductId() . '-' .
-                            $quoteItem->getProductId();
-
-                        if ($quoteItem->getParentItem()->getProductType() == 'configurable') {
-                            $price = $quoteItem->getParentItem()->getProduct()->getPrice();
-                        }
-                    }
-                    if ($quoteItem->getProductType() == 'giftcard') {
-                        $price = $quoteItem->getProduct()->getFinalPrice();
-                    }
-
-                    $oldQty = (array_key_exists($id, $lastValues)) ? $lastValues[$id] : 0;
-                    $finalQty = ($parentQty * $quoteItem->getQty()) - $oldQty;
-                    if ($finalQty != 0) {
-                        $products[] = array(
-                            'id' => $quoteItem->getProductId(),
-                            'sku' => $quoteItem->getSku(),
-                            'name' => $quoteItem->getName(),
-                            'price' => $price,
-                            'qty' => $finalQty,
-                            'currency' => Mage::app()->getStore()->getBaseCurrencyCode(),
-                            'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
-                        );
-                    }
+            $product = $this->_getProductFromItem($quoteItem, $lastValues);
+            if ($product) {
+                $products[] = $product;
             }
         }
         Mage::unregister('facebookpixel_products_addtocart');
@@ -273,46 +292,9 @@ class Hevelop_FacebookPixel_Model_Observer
         $items = $observer->getWishlist()->getItemCollection();
         /** @var Mage_Wishlist_Model_Item $item */
         foreach ($items as $item) {
-
-            $id = $item->getProductId();
-            $parentQty = 1;
-            $price = $item->getProduct()->getPrice();
-            switch ($item->getProductType()) {
-                case 'configurable':
-                case 'bundle':
-                    break;
-                case 'grouped':
-                    $id = $item->getOptionByCode('product_type')->getProductId() . '-' .
-                        $item->getProductId();
-                // no break;
-                default:
-                    if ($item->getParentItem()) {
-                        $parentQty = $item->getParentItem()->getQty();
-                        $id = $item->getId() . '-' .
-                            $item->getParentItem()->getProductId() . '-' .
-                            $item->getProductId();
-
-                        if ($item->getParentItem()->getProductType() == 'configurable') {
-                            $price = $item->getParentItem()->getProduct()->getPrice();
-                        }
-                    }
-                    if ($item->getProductType() == 'giftcard') {
-                        $price = $item->getProduct()->getFinalPrice();
-                    }
-
-                    $oldQty = (array_key_exists($id, $lastValues)) ? $lastValues[$id] : 0;
-                    $finalQty = ($parentQty * $item->getQty()) - $oldQty;
-                    if ($finalQty != 0) {
-                        $products[] = array(
-                            'id' => $item->getProductId(),
-                            'sku' => $item->getSku(),
-                            'name' => $item->getName(),
-                            'price' => $price,
-                            'qty' => $finalQty,
-                            'currency' => Mage::app()->getStore()->getBaseCurrencyCode(),
-                            'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
-                        );
-                    }
+            $product = $this->_getProductFromItem($item, $lastValues);
+            if ($product) {
+                $products[] = $product;
             }
         }
         Mage::unregister('facebookpixel_products_addtowishlist');
@@ -363,7 +345,6 @@ class Hevelop_FacebookPixel_Model_Observer
             return $this;
         }
         $productsToAdd = Mage::registry('facebookpixel_products_addtowishlist');
-        Mage::log($productsToAdd);
         if (!empty($productsToAdd)) {
             Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_WISHLIST_ADD,
                 rawurlencode(json_encode($productsToAdd)), 0, '/', null, null, false);
@@ -378,7 +359,8 @@ class Hevelop_FacebookPixel_Model_Observer
      * @param Varien_Event_Observer $observer
      * @return $this
      */
-    public function facebookPixelPostDispatch(Varien_Event_Observer $observer){
+    public function facebookPixelPostDispatch(Varien_Event_Observer $observer)
+    {
 
         $this->sendCookieOnCartActionComplete($observer);
         $this->sendCookieOnWishlistActionComplete($observer);

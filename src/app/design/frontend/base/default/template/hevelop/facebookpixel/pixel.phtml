@@ -1,5 +1,6 @@
-<?php if (Mage::helper('hevelop_facebookpixel')->isEnabled()): ?>
-    <?php $pixelId = Mage::helper('hevelop_facebookpixel')->getPixelId() ?>
+<?php $helper = Mage::helper('hevelop_facebookpixel'); ?>
+<?php if ($helper->isEnabled()): ?>
+    <?php $pixelId = $helper->getPixelId() ?>
     <!-- Facebook Pixel Code -->
     <script>
         !function (f, b, e, v, n, t, s) {
@@ -23,16 +24,16 @@
 
         fbq('init', '<?php echo $pixelId?>');
         fbq('track', "PageView");
-
-        <?php
-        $orderTracking = $this->_getOrdersTrackingCode();
-        ?>
+        <?php if($helper->isCheckout()):?>
+        fbq('track', "InitiateCheckout");
+        <?php endif; ?>
+        <?php $orderTracking = $this->_getOrdersTrackingCode(); ?>
         <?php if($orderTracking):?>
 
         // order tracking
         <?php echo $orderTracking ?>
         // order tracking
-        
+
         <?php endif; ?>
 
 

@@ -66,9 +66,34 @@ class Hevelop_FacebookPixel_Helper_Data extends Mage_Core_Helper_Abstract
 
         if (Mage::getSingleton('catalog/layer')) {
             $category = Mage::getSingleton('catalog/layer')->getCurrentCategory();
-        } else if(Mage::registry('current_category')){
+        } else if (Mage::registry('current_category')) {
             $category = Mage::registry('current_category');
         }
         return $category;
     }
+
+    /**
+     * check if the current url is checkout
+     *
+     * @return bool
+     */
+    public function isCheckout()
+    {
+
+        $controller = Mage::app()->getRequest()->getControllerName();
+        $action = Mage::app()->getRequest()->getActionName();
+        $route = Mage::app()->getRequest()->getRouteName();
+
+        $fullActionName = $route . '/' . $controller . '/' . $action;
+
+        $checkoutUrls = array(
+            'checkout/onepage/index',
+            'firecheckout/index/index',
+            'onestepcheckout/index/index',
+        );
+
+        $isCheckout = (in_array($fullActionName, $checkoutUrls)) ? true : false;
+        return $isCheckout;
+    }
+
 }
