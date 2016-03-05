@@ -1,7 +1,3 @@
-cookieAddToCart = 'facebookPixelClass_cart_add'
-cookieRemoveFromCart = 'facebookPixelClass_cart_remove'
-cookieAddToWishlist = 'facebookPixelClass_wishlist_add'
-cookieCustomerRegistered = 'facebookpixel_customer_register'
 googleAnalyticsUniversalData = googleAnalyticsUniversalData or 'shoppingCartContent': []
 
 getCookie = (name) ->
