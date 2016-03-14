@@ -199,7 +199,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 $productId = $product->getData($attributeCode);
             }
 
-            $pixelProd .= ", content_ids: [" . $productId . "], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            $pixelProd .= ", content_ids: ['" . $productId . "'], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
 
         return $pixelProd;
