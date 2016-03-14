@@ -8,8 +8,22 @@
  * @package    Hevelop_FacebookPixel
  * @author     Hevelop Team <systems@hevelop.com>
  */
-class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
+class Hevelop_FacebookPixel_Block_Pixel extends
+ Mage_Core_Block_Template
 {
+
+    protected $helper;
+
+
+    /**
+     * Hevelop_FacebookPixel_Block_Pixel constructor.
+     */
+    public function __construct()
+    {
+        $this->helper = Mage::helper('hevelop_facebookpixel');
+
+    }//end __construct()
+
 
     /**
      * Get a specific page name (may be customized via layout)
@@ -23,34 +37,53 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
 
     protected function _getCategoryPixelCode()
     {
-        $pixelCat = '';
-        $currCat = $this->getCurrentCategory();
+        $pixelCat      = '';
+        $attributeCode = $this->helper->getAttributeCodeForCatalog();
+        $currCat       = $this->getCurrentCategory();
+
         if ($currCat && !Mage::registry('product')) {
-            $products = $this->_getProducts();
+            $products   = $this->_getProducts();
             $productIds = array();
             foreach ($products as $product) {
-                array_push($productIds, $product->getId());
-            }
+                if ($attributeCode === false) {
+                    $productIds[] = $product->getId();
+                } else {
+                    $productIds[] = $product->getData($attributeCode);
+                }
+            }//end foreach
+
             $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . $currCat->getName()
                 . "', content_ids: [" . implode(',', $productIds) . "], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
+
         return $pixelCat;
-    }
+
+    }//end _getCategoryPixelCode()
+
 
     protected function _getSearchPixelCode()
     {
-        $pixelSearch = '';
-        $term = Mage::helper('catalogsearch')->getQueryText();
+        $pixelSearch   = '';
+        $attributeCode = $this->helper->getAttributeCodeForCatalog();
+        $term          = Mage::helper('catalogsearch')->getQueryText();
         if ($term) {
-            $products = $this->_getProductCollection();
+            $products   = $this->_getProductCollection();
             $productIds = array();
             foreach ($products as $product) {
-                array_push($productIds, $product->getId());
-            }
+                if ($attributeCode === false) {
+                    $productIds[] = $product->getId();
+                } else {
+                    $productIds[] = $product->getData($attributeCode);
+                }
+            }//end foreach
+
             $pixelSearch = "fbq('track', 'Search', {content_ids: [" . implode(',', $productIds) . "], content_type: 'product_group', search_string: " . json_encode($term) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
+
         return $pixelSearch;
-    }
+
+    }//end _getSearchPixelCode()
+
 
     /**
      * Retrieves a current category
@@ -154,14 +187,24 @@ class Hevelop_FacebookPixel_Block_Pixel extends Mage_Core_Block_Template
         $pixelProd = '';
         if ($product = Mage::registry('product')) {
 
-            $pixelProd = "fbq('track', 'ViewContent', {content_name: '" . $product->getName() . "'";
+            $attributeCode = $this->helper->getAttributeCodeForCatalog();
+            $pixelProd     = "fbq('track', 'ViewContent', {content_name: '" . $product->getName() . "'";
             if ($currCat = $this->getCurrentCategory()) {
                 $pixelProd .= ", content_category: '" . $currCat->getName() . "'";
             }
-            $pixelProd .= ", content_ids: [" . $product->getId() . "], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+
+            if ($attributeCode === false) {
+                $productId = $product->getId();
+            } else {
+                $productId = $product->getData($attributeCode);
+            }
+
+            $pixelProd .= ", content_ids: [" . $productId . "], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
+
         return $pixelProd;
-    }
+
+    }//end _getProductPixelCode()
 
     /**
      * Render information about specified orders and their items

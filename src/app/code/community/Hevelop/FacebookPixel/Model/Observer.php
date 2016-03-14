@@ -1,60 +1,77 @@
 <?php
 
+/**
+ * Data.php
+ *
+ * @category Magento_Module
+ * @package  Hevelop_FacebookPixel
+ * @author   Simone Marcato <simone@hevelop.com>
+ * @license  http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @link     https://github.com/Hevelop/Facebookpixel
+ *
+ */
 class Hevelop_FacebookPixel_Model_Observer
 {
-    protected $_fpcBlockPositions = array();
 
-    /** @var null hevelop_facebookpixel_Block_List_Json */
-    protected $_blockPromotions = null;
+    protected $fpcBlockPositions = array();
+
+    protected $blockPromotions = null;
+
 
     /**
      * Add order information into GA block to render on checkout success pages
-     * The method overwrites the FacebookPixel observer method by the system.xml event settings
+     * The method overwrites the FacebookPixel observer method by the
+     * system.xml event settings
      *
      * Fired by the checkout_onepage_controller_success_action and
      * checkout_multishipping_controller_success_action events
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
-    public function setFacebookPixelOnOrderSuccessPageView(Varien_Event_Observer $observer)
-    {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+    public function setFacebookPixelOnOrderSuccessPageView(
+        Varien_Event_Observer $observer
+    ) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
 
         $orderIds = $observer->getEvent()->getOrderIds();
-        if (empty($orderIds) || !is_array($orderIds)) {
+        if (empty($orderIds) === true || is_array($orderIds) === false) {
             return $this;
         }
-        /** @var hevelop_facebookpixel_Block_Ga $block */
-        $block = Mage::app()->getFrontController()->getAction()->getLayout()->getBlock('facebookpixel');
-        if ($block) {
+
+        $action = Mage::app()->getFrontController()->getAction();
+        $block  = $action->getLayout()->getBlock('facebookpixel');
+
+        if ($block instanceof Mage_Core_Block_Template) {
             $block->setOrderIds($orderIds);
         }
+
         return $this;
-    }
+
+    }//end setFacebookPixelOnOrderSuccessPageView()
 
 
     /**
-     * Save previous cart quantities on add to cart action to find the delta on load page
+     * Save previous cart quantities on add to cart action to find the
+     * delta on load page
      * Fired by sales_quote_load_after event
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
     public function rememberCartQuantity(Varien_Event_Observer $observer)
     {
-
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
 
-        /** @var Mage_Sales_Model_Quote $quote */
-        $quote = $observer->getEvent()->getQuote();
-        $session = Mage::getSingleton('checkout/session');
+        $quote       = $observer->getEvent()->getQuote();
+        $session     = Mage::getSingleton('checkout/session');
         $productQtys = array();
-        /** @var Mage_Sales_Model_Quote_Item $quoteItem */
         foreach ($quote->getAllItems() as $quoteItem) {
             $parentQty = 1;
             switch ($quoteItem->getProductType()) {
@@ -62,69 +79,79 @@ class Hevelop_FacebookPixel_Model_Observer
                 case 'configurable':
                     break;
                 case 'grouped':
-                    $id = $quoteItem->getOptionByCode('product_type')->getProductId()
-                        . '-' . $quoteItem->getProductId();
+                    $option = $quoteItem->getOptionByCode('product_type');
+                    $id = $option->getProductId();
+                    $id = $id.'-'.$quoteItem->getProductId();
                     $productQtys[$id] = $quoteItem->getQty();
                     break;
                 case 'giftcard':
-                    $id = $quoteItem->getId() . '-' . $quoteItem->getProductId();
+                    $id = $quoteItem->getId().'-'.$quoteItem->getProductId();
                     $productQtys[$id] = $quoteItem->getQty();
                     break;
                 default:
                     if ($quoteItem->getParentItem()) {
                         $parentQty = $quoteItem->getParentItem()->getQty();
-                        $id = $quoteItem->getId() . '-' .
-                            $quoteItem->getParentItem()->getProductId() . '-' .
-                            $quoteItem->getProductId();
+
+                        $id  = $quoteItem->getId().'-';
+                        $id .= $quoteItem->getParentItem()->getProductId().'-';
+                        $id .= $quoteItem->getProductId();
                     } else {
                         $id = $quoteItem->getProductId();
                     }
-                    $productQtys[$id] = $quoteItem->getQty() * $parentQty;
-            }
-        }
-        /** prevent from overwriting on page load */
-        if (!$session->hasData(
+
+                    $productQtys[$id] = ($quoteItem->getQty() * $parentQty);
+            }//end switch
+        }//end foreach
+
+        $dataKeyBeforeAddToCart
+            = Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART;
+
+        if ($session->hasData(
             Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART
-        )
+        ) === false
         ) {
             $session->setData(
-                Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART,
+                $dataKeyBeforeAddToCart,
                 $productQtys
             );
         }
+
         return $this;
-    }
+
+    }//end rememberCartQuantity()
 
 
     /**
      * Returns product info from a given item (quote or wishlist)
      *
-     * @param mixed $item
-     * @param array $lastValues
+     * @param mixed $item       item to get product from
+     * @param array $lastValues reference to parent code
+     * 
      * @return mixed $product
      */
-    protected function _getProductFromItem($item, $lastValues)
+    protected function getProductFromItem($item, $lastValues)
     {
-        $product = false;
-        $id = $item->getProductId();
+        $product   = false;
+        $id        = $item->getProductId();
         $parentQty = 1;
-        $price = $item->getProduct()->getPrice();
+        $price     = $item->getProduct()->getPrice();
         switch ($item->getProductType()) {
             case 'configurable':
             case 'bundle':
                 break;
             case 'grouped':
-                $id = $item->getOptionByCode('product_type')->getProductId() . '-' .
-                    $item->getProductId();
+                $id  = $item->getOptionByCode('product_type')->getProductId().'-';
+                $id .= $item->getProductId();
             // no break;
             default:
                 if ($item->getParentItem()) {
                     $parentQty = $item->getParentItem()->getQty();
-                    $id = $item->getId() . '-' .
-                        $item->getParentItem()->getProductId() . '-' .
-                        $item->getProductId();
+                    $id        = $item->getId().'-';
+                    $id       .= $item->getParentItem()->getProductId().'-';
+                    $id       .= $item->getProductId();
 
-                    if ($item->getParentItem()->getProductType() == 'configurable') {
+                    $parentProductType = $item->getParentItem()->getProductType();
+                    if ($parentProductType === 'configurable') {
                         $price = $item->getParentItem()->getProduct()->getPrice();
                     }
                 }
@@ -132,9 +159,11 @@ class Hevelop_FacebookPixel_Model_Observer
                     $price = $item->getProduct()->getFinalPrice();
                 }
 
-                $oldQty = (array_key_exists($id, $lastValues)) ? $lastValues[$id] : 0;
-                $finalQty = ($parentQty * $item->getQty()) - $oldQty;
-                if ($finalQty != 0) {
+                $check  = array_key_exists($id, $lastValues) === true;
+                $oldQty = ($check === true) ? $lastValues[$id] : 0;
+
+                $finalQty = (($parentQty * $item->getQty()) - $oldQty);
+                if ($finalQty !== 0) {
                     $product = array(
                         'id' => $item->getProductId(),
                         'sku' => $item->getSku(),
@@ -145,222 +174,283 @@ class Hevelop_FacebookPixel_Model_Observer
                         'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
                     );
                 }
-        }
+
+        }//end switch
 
         return $product;
-    }
+
+    }//end getProductFromItem()
+
 
     /**
-     * When shopping cart is cleaned the remembered quantities in a session needs also to be deleted
+     * When shopping cart is cleaned the remembered quantities in a
+     * session needs also to be deleted
      *
      * Fired by controller_action_postdispatch_checkout_cart_updatePost event
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
     public function clearSessionCartQuantity(Varien_Event_Observer $observer)
     {
-
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
-        /** @var Mage_Core_Controller_Varien_Action $controllerAction */
+
+        $dataKeyBeforeAddToCart
+            = Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART;
+
         $controllerAction = $observer->getEvent()->getControllerAction();
-        $updateAction = (string)$controllerAction->getRequest()->getParam('update_cart_action');
-        if ($updateAction == 'empty_cart') {
+        $request          = $controllerAction->getRequest();
+        $updateAction     = (string) $request->getParam('update_cart_action');
+        if ($updateAction === 'empty_cart') {
             $session = Mage::getSingleton('checkout/session');
-            $session->unsetData(Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART);
+            $session->unsetData($dataKeyBeforeAddToCart);
         }
+
         return $this;
-    }
+
+    }//end clearSessionCartQuantity()
+
 
     /**
      * Fired by sales_quote_product_add_after event
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
     public function setFacebookPixelOnCartAdd(Varien_Event_Observer $observer)
     {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
 
+        $dataKeyBeforeAddToCart
+            = Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART;
+
         $products = Mage::registry('facebookpixel_products_addtocart');
-        if (!$products) {
+        if (is_array($products) === false) {
             $products = array();
         }
+
         $lastValues = array();
-        $session = Mage::getSingleton('checkout/session');
-        if ($session->hasData(
-            Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART
-        )
-        ) {
-            $lastValues = $session->getData(
-                Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART
-            );
+        $session    = Mage::getSingleton('checkout/session');
+        if ($session->hasData($dataKeyBeforeAddToCart) === true) {
+            $lastValues = $session->getData($dataKeyBeforeAddToCart);
         }
 
         $items = $observer->getEvent()->getItems();
-        /** @var Mage_Sales_Model_Quote_Item $quoteItem */
         foreach ($items as $quoteItem) {
-            $product = $this->_getProductFromItem($quoteItem, $lastValues);
-            if ($product) {
+            $product = $this->getProductFromItem($quoteItem, $lastValues);
+            if ($product instanceof Mage_Catalog_Model_Product) {
                 $products[] = $product;
             }
-        }
+        }//end foreach
+
         Mage::unregister('facebookpixel_products_addtocart');
         Mage::register('facebookpixel_products_addtocart', $products);
-        $session->unsetData(Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART);
+        $session->unsetData($dataKeyBeforeAddToCart);
+
         return $this;
-    }
+
+    }//end setFacebookPixelOnCartAdd()
+
 
     /**
      * Fired by sales_quote_remove_item event
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
     public function setFacebookPixelOnCartRemove(Varien_Event_Observer $observer)
     {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
+
         $products = Mage::registry('facebookpixel_products_to_remove');
-        if (!$products) {
+        if (is_array($products) === false) {
             $products = array();
         }
-        /** @var Mage_Sales_Model_Quote_Item $quoteItem */
+
         $quoteItem = $observer->getEvent()->getQuoteItem();
-        if ($simples = $quoteItem->getChildren() and $quoteItem->getProductType() != 'configurable') {
+        $simples   = $quoteItem->getChildren();
+        $catalogId = Mage::helper('hevelop_facebookpixel')->getProductCatalogId();
+
+        if (is_array($simples) === true
+            && count($simples) > 0
+            && $quoteItem->getProductType() !== 'configurable'
+        ) {
             foreach ($simples as $item) {
                 $products[] = array(
-                    'sku' => $item->getSku(),
-                    'name' => $item->getName(),
-                    'price' => $item->getPrice(),
-                    'qty' => $item->getQty(),
-                    'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
-                );
+                               'sku'                => $item->getSku(),
+                               'name'               => $item->getName(),
+                               'price'              => $item->getPrice(),
+                               'qty'                => $item->getQty(),
+                               'product_catalog_id' => $catalogId,
+                              );
             }
         } else {
+            $price      = $quoteItem->getProduct()->getPrice();
             $products[] = array(
-                'sku' => $quoteItem->getSku(),
-                'name' => $quoteItem->getName(),
-                'price' => $quoteItem->getProduct()->getPrice(),
-                'qty' => $quoteItem->getQty(),
-                'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
-            );
+                           'sku'                => $quoteItem->getSku(),
+                           'name'               => $quoteItem->getName(),
+                           'price'              => $price,
+                           'qty'                => $quoteItem->getQty(),
+                           'product_catalog_id' => $catalogId,
+                          );
         }
+
         Mage::unregister('facebookpixel_products_to_remove');
         Mage::register('facebookpixel_products_to_remove', $products);
 
         return $this;
-    }
+
+    }//end setFacebookPixelOnCartRemove()
+
 
     /**
      * Fired by wishlist_add_product event
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
     public function setFacebookPixelOnWishlistAdd(Varien_Event_Observer $observer)
     {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
 
-        // Mage::log($observer->getWishlist()->getItemCollection()->getSize());
-
         Mage::register('wishlist_add_product', $observer->getProduct());
 
-
         $products = Mage::registry('facebookpixel_products_addtowishlist');
-        if (!$products) {
+        if (is_array($products) === false) {
             $products = array();
         }
+
+        $dataKeyBeforeAddToWishlist
+            = Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST;
+
         $lastValues = array();
-        $session = Mage::getSingleton('checkout/session');
-        if ($session->hasData(
-            Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST
-        )
-        ) {
-            $lastValues = $session->getData(
-                Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST
-            );
+        $session    = Mage::getSingleton('checkout/session');
+        if ($session->hasData($dataKeyBeforeAddToWishlist) === true) {
+            $lastValues = $session->getData($dataKeyBeforeAddToWishlist);
         }
 
         $items = $observer->getWishlist()->getItemCollection();
-        /** @var Mage_Wishlist_Model_Item $item */
         foreach ($items as $item) {
-            $product = $this->_getProductFromItem($item, $lastValues);
-            if ($product) {
+            $product = $this->getProductFromItem($item, $lastValues);
+            if ($product instanceof Mage_Catalog_Model_Product) {
                 $products[] = $product;
             }
-        }
+        }//end foreach
+
         Mage::unregister('facebookpixel_products_addtowishlist');
         Mage::register('facebookpixel_products_addtowishlist', $products);
-        $session->unsetData(Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOWISHLIST);
-
+        $session->unsetData($dataKeyBeforeAddToWishlist);
 
         return $this;
-    }
+
+    }//end setFacebookPixelOnWishlistAdd()
+
 
     /**
      * Send cookies after cart action
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
     public function sendCookieOnCartActionComplete(Varien_Event_Observer $observer)
     {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
 
+        $dataKeyAddToCart      = Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_ADD;
+        $dataKeyRemoveFromCart = Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_ADD;
+
         $productsToAdd = Mage::registry('facebookpixel_products_addtocart');
-        if (!empty($productsToAdd)) {
-            Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_ADD,
-                rawurlencode(json_encode($productsToAdd)), 0, '/', null, null, false);
-        }
-        $productsToRemove = Mage::registry('facebookpixel_products_to_remove');
-        if (!empty($productsToRemove)) {
+        if (empty($productsToAdd) === false) {
             Mage::app()->getCookie()->set(
-                Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_REMOVE,
-                rawurlencode(Mage::helper('core')->jsonEncode($productsToRemove)), 0, '/', null, null, false
+                $dataKeyAddToCart,
+                rawurlencode(json_encode($productsToAdd)),
+                0,
+                '/',
+                null,
+                null,
+                false
             );
         }
+
+        $productsToRemove = Mage::registry('facebookpixel_products_to_remove');
+        if (empty($productsToRemove) === false) {
+            Mage::app()->getCookie()->set(
+                $dataKeyRemoveFromCart,
+                rawurlencode(Mage::helper('core')->jsonEncode($productsToRemove)),
+                0,
+                '/',
+                null,
+                null,
+                false
+            );
+        }
+
         return $this;
-    }
+
+    }//end sendCookieOnCartActionComplete()
 
 
     /**
      * Send cookies after wishlist action
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
-    public function sendCookieOnWishlistActionComplete(Varien_Event_Observer $observer)
-    {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+    public function sendCookieOnWishlistActionComplete(
+        Varien_Event_Observer $observer
+    ) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
+
+        $dataKeyAddToWishlist
+            = Hevelop_FacebookPixel_Helper_Data::COOKIE_WISHLIST_ADD;
+
         $productsToAdd = Mage::registry('facebookpixel_products_addtowishlist');
-        if (!empty($productsToAdd)) {
-            Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_WISHLIST_ADD,
-                rawurlencode(json_encode($productsToAdd)), 0, '/', null, null, false);
+        if (empty($productsToAdd) === false) {
+            Mage::app()->getCookie()->set(
+                $dataKeyAddToWishlist,
+                rawurlencode(json_encode($productsToAdd)),
+                0,
+                '/',
+                null,
+                null,
+                false
+            );
         }
+
         return $this;
-    }
+
+    }//end sendCookieOnWishlistActionComplete()
+
 
     /**
      * Fired by customer_register_success event
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
-    public function setFacebookPixelOnCustomerRegisterSuccess(Varien_Event_Observer $observer)
-    {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+    public function setFacebookPixelOnCustomerRegisterSuccess(
+        Varien_Event_Observer $observer
+    ) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
 
@@ -369,43 +459,58 @@ class Hevelop_FacebookPixel_Model_Observer
         Mage::register('facebookpixel_customer_registered', $customer);
 
         return $this;
-    }
+
+    }//end setFacebookPixelOnCustomerRegisterSuccess()
+
 
     /**
      * Send cookies after new customer registration
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
-    public function sendCookieOnCustomerRegisterSuccess(Varien_Event_Observer $observer)
-    {
-        if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
+    public function sendCookieOnCustomerRegisterSuccess(
+        Varien_Event_Observer $observer
+    ) {
+        if (Mage::helper('hevelop_facebookpixel')->isEnabled() === false) {
             return $this;
         }
 
         $customer = Mage::registry('facebookpixel_customer_registered');
-        if (!empty($customer)) {
-            Mage::app()->getCookie()->set(Hevelop_FacebookPixel_Helper_Data::COOKIE_CUSTOMER_REGISTER,
-                rawurlencode(json_encode($customer->getId())), 0, '/', null, null, false);
+        if ($customer instanceof Mage_Customer_Model_Customer) {
+            Mage::app()->getCookie()->set(
+                Hevelop_FacebookPixel_Helper_Data::COOKIE_CUSTOMER_REGISTER,
+                rawurlencode(json_encode($customer->getId())),
+                0,
+                '/',
+                null,
+                null,
+                false
+            );
         }
+
         return $this;
-    }
+
+    }//end sendCookieOnCustomerRegisterSuccess()
 
 
     /**
      * Excute on post dispatch event
      *
-     * @param Varien_Event_Observer $observer
+     * @param Varien_Event_Observer $observer Magento observer object
+     *
      * @return $this
      */
     public function facebookPixelPostDispatch(Varien_Event_Observer $observer)
     {
-
         $this->sendCookieOnCartActionComplete($observer);
         $this->sendCookieOnWishlistActionComplete($observer);
         $this->sendCookieOnCustomerRegisterSuccess($observer);
 
-    }
+        return $this;
+
+    }//end facebookPixelPostDispatch()
 
 
-}
+}//end class
