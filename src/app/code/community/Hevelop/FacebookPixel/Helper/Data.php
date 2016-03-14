@@ -142,6 +142,11 @@ class Hevelop_FacebookPixel_Helper_Data extends
         $attributeCode = Mage::getStoreConfig(
             self::XML_PATH_ATTRIBUTE_CODE
         );
+
+        if (empty($attributeCode) === true) {
+            $attributeCode = false;
+        }
+
         return $attributeCode;
 
     }//end getAttributeCodeForCatalog()
