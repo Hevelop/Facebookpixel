@@ -53,7 +53,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
             }//end foreach
 
             $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . $currCat->getName()
-                . "', content_ids: [" . implode(',', $productIds) . "], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+                . "', content_ids: [" . implode("','", $productIds) . "], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
 
         return $pixelCat;
@@ -77,7 +77,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }//end foreach
 
-            $pixelSearch = "fbq('track', 'Search', {content_ids: [" . implode(',', $productIds) . "], content_type: 'product_group', search_string: " . json_encode($term) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            $pixelSearch = "fbq('track', 'Search', {content_ids: [" . implode("','", $productIds) . "], content_type: 'product_group', search_string: " . json_encode($term) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
 
         return $pixelSearch;
@@ -224,10 +224,14 @@ class Hevelop_FacebookPixel_Block_Pixel extends
         foreach ($collection as $order) {
             $productIds = array();
             foreach ($order->getAllVisibleItems() as $item) {
-                $productIds[] = $item->getProductId();
+                if ($attributeCode === false) {
+                    $productIds[] = $item->getProductId();
+                } else {
+                    $productIds[] = $item->getProduct()->getData($attributeCode);
+                }
             }
             $result[] = sprintf("fbq('track', 'Purchase', {%s: '%s', %s: '%s', %s: '%s', %s: '%s', %s: '%s', %s: '%s'})",
-                'content_ids', '[' . implode(',', $productIds) . ']',
+                'content_ids', '[' . implode("','", $productIds) . ']',
                 'content_type', 'product',
                 'value', $order->getBaseGrandTotal(),
                 'currency', Mage::app()->getStore()->getBaseCurrencyCode(),
