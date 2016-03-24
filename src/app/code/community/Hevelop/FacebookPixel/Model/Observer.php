@@ -372,7 +372,7 @@ class Hevelop_FacebookPixel_Model_Observer
         }
 
         $dataKeyAddToCart      = Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_ADD;
-        $dataKeyRemoveFromCart = Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_ADD;
+        $dataKeyRemoveFromCart = Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_REMOVE;
 
         $productsToAdd = Mage::registry('facebookpixel_products_addtocart');
         if (empty($productsToAdd) === false) {
