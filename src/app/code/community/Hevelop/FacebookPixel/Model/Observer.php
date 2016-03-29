@@ -17,6 +17,19 @@ class Hevelop_FacebookPixel_Model_Observer
 
     protected $blockPromotions = null;
 
+    /** @var Hevelop_FacebookPixel_Helper_Data */
+    protected $helper;
+
+
+    /**
+     * Hevelop_FacebookPixel_Model_Observer constructor.
+     */
+    public function __construct()
+    {
+        $this->helper = Mage::helper('hevelop_facebookpixel');
+
+    }//end __construct()
+
 
     /**
      * Add order information into GA block to render on checkout success pages
@@ -128,13 +141,18 @@ class Hevelop_FacebookPixel_Model_Observer
      * @param array $lastValues reference to parent code
      * 
      * @return mixed $product
+     * @throws Mage_Core_Model_Store_Exception
      */
     protected function getProductFromItem($item, $lastValues)
     {
-        $product   = false;
-        $id        = $item->getProductId();
-        $parentQty = 1;
-        $price     = $item->getProduct()->getPrice();
+        $product          = false;
+        $id               = $item->getProductId();
+        $parentQty        = 1;
+        $price            = $item->getProduct()->getPrice();
+        $baseCurrencyCode = Mage::app()->getStore()->getBaseCurrencyCode();
+        $productCatalogId = $this->helper->getProductCatalogId();
+        $attributeCode    = $this->helper->getAttributeCodeForCatalog();
+
         switch ($item->getProductType()) {
             case 'configurable':
             case 'bundle':
@@ -144,18 +162,33 @@ class Hevelop_FacebookPixel_Model_Observer
                 $id .= $item->getProductId();
             // no break;
             default:
+
+                if ($attributeCode === false) {
+                    $productId = $item->getProduct()->getId();
+                } else {
+                    $productId = $item->getProduct()->getData($attributeCode);
+                }
+
                 if ($item->getParentItem()) {
                     $parentQty = $item->getParentItem()->getQty();
                     $id        = $item->getId().'-';
                     $id       .= $item->getParentItem()->getProductId().'-';
                     $id       .= $item->getProductId();
 
+                    if ($attributeCode === false) {
+                        $productId = $item->getParentItem()->getProduct()->getId();
+                    } else {
+                        $productId = $item->getParentItem()->getProduct()->getData(
+                            $attributeCode
+                        );
+                    }
+
                     $parentProductType = $item->getParentItem()->getProductType();
                     if ($parentProductType === 'configurable') {
                         $price = $item->getParentItem()->getProduct()->getPrice();
                     }
                 }
-                if ($item->getProductType() == 'giftcard') {
+                if ($item->getProductType() === 'giftcard') {
                     $price = $item->getProduct()->getFinalPrice();
                 }
 
@@ -164,17 +197,19 @@ class Hevelop_FacebookPixel_Model_Observer
 
                 $finalQty = (($parentQty * $item->getQty()) - $oldQty);
                 if ($finalQty !== 0) {
-                    $product = array(
-                        'id' => $item->getProductId(),
-                        'sku' => $item->getSku(),
-                        'name' => $item->getName(),
-                        'price' => $price,
-                        'qty' => $finalQty,
-                        'currency' => Mage::app()->getStore()->getBaseCurrencyCode(),
-                        'product_catalog_id' => Mage::helper('hevelop_facebookpixel')->getProductCatalogId(),
-                    );
-                }
 
+
+
+                    $product = array(
+                                'id'                 => $productId,
+                                'sku'                => $item->getSku(),
+                                'name'               => $item->getName(),
+                                'price'              => $price,
+                                'qty'                => $finalQty,
+                                'currency'           => $baseCurrencyCode,
+                                'product_catalog_id' => $productCatalogId,
+                               );
+                }//end if
         }//end switch
 
         return $product;
@@ -244,7 +279,7 @@ class Hevelop_FacebookPixel_Model_Observer
         $items = $observer->getEvent()->getItems();
         foreach ($items as $quoteItem) {
             $product = $this->getProductFromItem($quoteItem, $lastValues);
-            if ($product instanceof Mage_Catalog_Model_Product) {
+            if ($product !== false) {
                 $products[] = $product;
             }
         }//end foreach
@@ -344,7 +379,7 @@ class Hevelop_FacebookPixel_Model_Observer
         $items = $observer->getWishlist()->getItemCollection();
         foreach ($items as $item) {
             $product = $this->getProductFromItem($item, $lastValues);
-            if ($product instanceof Mage_Catalog_Model_Product) {
+            if ($product !== false) {
                 $products[] = $product;
             }
         }//end foreach
@@ -375,10 +410,11 @@ class Hevelop_FacebookPixel_Model_Observer
         $dataKeyRemoveFromCart = Hevelop_FacebookPixel_Helper_Data::COOKIE_CART_REMOVE;
 
         $productsToAdd = Mage::registry('facebookpixel_products_addtocart');
+
         if (empty($productsToAdd) === false) {
             Mage::app()->getCookie()->set(
                 $dataKeyAddToCart,
-                rawurlencode(json_encode($productsToAdd)),
+                json_encode($productsToAdd),
                 0,
                 '/',
                 null,
