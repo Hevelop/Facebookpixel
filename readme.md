@@ -5,7 +5,7 @@ Magento 1 module for Facebook Conversion Tracking and Custom Audience [Facebook 
 
 Facts
 -----
-- version: 1.4.1
+- version: 1.5.0
 - extension key: Hevelop_FacebookPixel
 - [extension on GitHub](https://github.com/Hevelop/Facebookpixel)
 - [direct download link](https://github.com/Hevelop/Facebookpixel/archive/v1.2.0.zip)

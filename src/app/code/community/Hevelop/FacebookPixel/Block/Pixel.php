@@ -90,7 +90,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }//end foreach
 
-            $pixelSearch = "fbq('track', 'Search', {content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product_group', search_string: " . json_encode($term) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            $pixelSearch = "fbq('track', 'Search', {content_ids: " . json_encode($productIds) . ", content_type: 'product_group', search_string: " . json_encode($term) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
 
         return $pixelSearch;
@@ -272,7 +272,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }
             $result[] = sprintf("fbq('track', 'Purchase', {%s: %s, %s: '%s', %s: '%s', %s: '%s', %s: '%s', %s: '%s'})",
-                'content_ids', '[' . implode("','", $productIds) . ']',
+                'content_ids', json_encode($productIds),
                 'content_type', 'product',
                 'value', $order->getBaseGrandTotal(),
                 'currency', Mage::app()->getStore()->getBaseCurrencyCode(),
