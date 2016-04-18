@@ -1,7 +1,18 @@
+<?php
+/**
+ * product-pixel-footer.phtml
+ *
+ * @category Magento_Module
+ * @package  Hevelop_FacebookPixel
+ * @author   Simone Marcato <simone@hevelop.com>
+ * @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
+ * @link     https://github.com/Hevelop/Facebookpixel
+ */
+?>
 <?php if (Mage::helper('hevelop_facebookpixel')->isEnabled()): ?>
     <?php $pixelId = Mage::helper('hevelop_facebookpixel')->getPixelId() ?>
     <!-- Facebook Pixel Code Product-->
     <script>
-        <?php echo $this->_getProductPixelCode() ?>
+        <?php echo $this->getProductPixelCode() ?>
     </script>
 <?php endif; ?>

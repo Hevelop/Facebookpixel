@@ -1,15 +1,16 @@
 <?php
 
-
 /**
- * Hevelop Fcebook Pixel Block
+ * Class Hevelop_FacebookPixel_Block_Pixel
  *
- * @category   Hevelop
- * @package    Hevelop_FacebookPixel
- * @author     Hevelop Team <systems@hevelop.com>
+ * @category Magento_Module
+ * @package  Hevelop_FacebookPixel
+ * @author   Simone Marcato <simone@hevelop.com>
+ * @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
+ * @link     https://github.com/Hevelop/Facebookpixel
  */
 class Hevelop_FacebookPixel_Block_Pixel extends
-    Mage_Core_Block_Template
+ Mage_Core_Block_Template
 {
 
     protected $helper;
@@ -33,16 +34,23 @@ class Hevelop_FacebookPixel_Block_Pixel extends
     public function getPageName()
     {
         return $this->_getData('page_name');
-    }
 
-    protected function _getCategoryPixelCode()
+    }//end getPageName()
+
+
+    /**
+     * getCategoryPixelCode
+     *
+     * @return string
+     */
+    protected function getCategoryPixelCode()
     {
         $pixelCat      = '';
         $attributeCode = $this->helper->getAttributeCodeForCatalog();
         $currCat       = $this->getCurrentCategory();
 
         if ($currCat && !Mage::registry('product')) {
-            $products   = $this->_getProducts();
+            $products   = $this->getProducts();
             $productIds = array();
             foreach ($products as $product) {
                 if ($attributeCode === false) {
@@ -58,16 +66,21 @@ class Hevelop_FacebookPixel_Block_Pixel extends
 
         return $pixelCat;
 
-    }//end _getCategoryPixelCode()
+    }//end getCategoryPixelCode()
 
 
-    protected function _getSearchPixelCode()
+    /**
+     * getSearchPixelCode
+     *
+     * @return string
+     */
+    protected function getSearchPixelCode()
     {
         $pixelSearch   = '';
         $attributeCode = $this->helper->getAttributeCodeForCatalog();
         $term          = Mage::helper('catalogsearch')->getQueryText();
         if ($term) {
-            $products   = $this->_getProductCollection();
+            $products   = $this->getProductCollection();
             $productIds = array();
             foreach ($products as $product) {
                 if ($attributeCode === false) {
@@ -82,7 +95,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
 
         return $pixelSearch;
 
-    }//end _getSearchPixelCode()
+    }//end getSearchPixelCode()
 
 
     /**
@@ -100,32 +113,38 @@ class Hevelop_FacebookPixel_Block_Pixel extends
         } else if (Mage::registry('current_category')) {
             $category = Mage::registry('current_category');
         }
+
         return $category;
-    }
+
+    }//end getCurrentCategory()
+
 
     /**
      * Retrieve loaded category collection
      *
      * @return Mage_Catalog_Model_Resource_Collection_Abstract | null
      */
-    protected function _getProducts()
+    protected function getProducts()
     {
         /** @var Mage_Catalog_Model_Category $category */
         $category = $this->getCurrentCategory();
         if ($category && ($category->getDisplayMode() == Mage_Catalog_Model_Category::DM_MIXED ||
                 $category->getDisplayMode() == Mage_Catalog_Model_Category::DM_PRODUCT)
         ) {
-            return $this->_getProductCollection();
+            return $this->getProductCollection();
         }
+
         return null;
-    }
+
+    }//end getProducts()
+
 
     /**
      * Retrieve loaded category collection
      *
      * @return Mage_Catalog_Model_Resource_Collection_Abstract | null
      */
-    protected function _getProductCollection()
+    protected function getProductCollection()
     {
         /* For catalog list and search results
          * Expects getListBlock as Mage_Catalog_Block_Product_List
@@ -165,24 +184,44 @@ class Hevelop_FacebookPixel_Block_Pixel extends
         }
 
         return $this->_productCollection;
-    }
 
+    }//end getProductCollection()
+
+
+    /**
+     * getListBlock
+     *
+     * @return mixed
+     */
     public function getListBlock()
     {
-        // Mage::log('block name  ' . $this->getBlockName());
-        // Mage::log('block name  ' . $this->getData('block_name'));
         return $this->getLayout()->getBlock($this->getData('block_name'));
-    }
 
+    }//end getListBlock()
+
+
+    /**
+     * getCurrentPage
+     *
+     * @return int
+     */
     public function getCurrentPage()
     {
         if ($page = (int)$this->getRequest()->getParam($this->getPageVarName())) {
             return $page;
         }
-        return 1;
-    }
 
-    protected function _getProductPixelCode()
+        return 1;
+
+    }//end getCurrentPage()
+
+
+    /**
+     * getProductPixelCode
+     *
+     * @return string
+     */
+    protected function getProductPixelCode()
     {
         $pixelProd = '';
         if ($product = Mage::registry('product')) {
@@ -204,7 +243,8 @@ class Hevelop_FacebookPixel_Block_Pixel extends
 
         return $pixelProd;
 
-    }//end _getProductPixelCode()
+    }//end getProductPixelCode()
+
 
     /**
      * Render information about specified orders and their items
@@ -212,7 +252,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
      * @link http://code.google.com/apis/analytics/docs/gaJS/gaJSApiEcommerce.html#_gat.GA_Tracker_._addTrans
      * @return string
      */
-    protected function _getOrdersTrackingCode()
+    protected function getOrdersTrackingCode()
     {
         $orderIds = $this->getOrderIds();
         if (empty($orderIds) || !is_array($orderIds)) {
@@ -241,8 +281,11 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 'product_catalog_id', Mage::helper('hevelop_facebookpixel')->getProductCatalogId()
             );
         }
+
         return implode("\n", $result);
-    }
+
+    }//end getOrdersTrackingCode()
+
 
     /**
      * Render facebook pixel scripts
@@ -254,6 +297,10 @@ class Hevelop_FacebookPixel_Block_Pixel extends
         if (!Mage::helper('hevelop_facebookpixel')->isEnabled()) {
             return '';
         }
+
         return parent::_toHtml();
-    }
-}
+
+    }//end _toHtml()
+
+
+}//end class

@@ -1,17 +1,16 @@
 <?php
 
 /**
- * Attributes.php
+ * Class Hevelop_FacebookPixel_Model_Adminhtml_System_Config_Source_Attributes
  *
  * @category Magento_Module
  * @package  Hevelop_FacebookPixel
  * @author   Simone Marcato <simone@hevelop.com>
- * @license  http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
  * @link     https://github.com/Hevelop/Facebookpixel
- *
  */
-class Hevelop_FacebookPixel_Model_Adminhtml_System_Config_Source_Attributes
- extends Mage_Eav_Model_Entity_Attribute_Source_Abstract
+class Hevelop_FacebookPixel_Model_Adminhtml_System_Config_Source_Attributes extends
+ Mage_Eav_Model_Entity_Attribute_Source_Abstract
 {
 
 

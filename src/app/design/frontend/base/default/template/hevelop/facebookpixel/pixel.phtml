@@ -1,3 +1,14 @@
+<?php
+/**
+ * pixel.phtml
+ *
+ * @category Magento_Module
+ * @package  Hevelop_FacebookPixel
+ * @author   Simone Marcato <simone@hevelop.com>
+ * @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
+ * @link     https://github.com/Hevelop/Facebookpixel
+ */
+?>
 <?php $helper = Mage::helper('hevelop_facebookpixel'); ?>
 <?php if ($helper->isEnabled()): ?>
     <?php $pixelId = $helper->getPixelId() ?>
@@ -27,7 +38,7 @@
         <?php if($helper->isCheckout()):?>
         fbq('track', "InitiateCheckout");
         <?php endif; ?>
-        <?php $orderTracking = $this->_getOrdersTrackingCode(); ?>
+        <?php $orderTracking = $this->getOrdersTrackingCode(); ?>
         <?php if($orderTracking):?>
 
         // order tracking
