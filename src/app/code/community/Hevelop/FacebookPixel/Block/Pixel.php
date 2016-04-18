@@ -231,7 +231,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                     $productIds[] = $item->getProduct()->getData($attributeCode);
                 }
             }
-            $result[] = sprintf("fbq('track', 'Purchase', {%s: '%s', %s: '%s', %s: '%s', %s: '%s', %s: '%s', %s: '%s'})",
+            $result[] = sprintf("fbq('track', 'Purchase', {%s: %s, %s: '%s', %s: '%s', %s: '%s', %s: '%s', %s: '%s'})",
                 'content_ids', '[' . implode("','", $productIds) . ']',
                 'content_type', 'product',
                 'value', $order->getBaseGrandTotal(),
