@@ -60,8 +60,12 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }//end foreach
 
-            $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . $currCat->getName()
-                . "', content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            if (count($productIds) > 0) {
+                $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . $currCat->getName()
+                    . "', content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            } else {
+                $pixelCat = "";
+            }
         }
 
         return $pixelCat;
