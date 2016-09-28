@@ -3,4 +3,4 @@ src/app/etc/modules/Hevelop_FacebookPixel.xml                               app/
 src/app/design/frontend/base/default/layout/hevelop/facebookpixel.xml       app/design/frontend/base/default/layout/hevelop/facebookpixel.xml
 src/app/design/frontend/base/default/template/hevelop/facebookpixel         app/design/frontend/base/default/template/hevelop/facebookpixel
 src/js/facebookpixel/facebookpixel.js                                       js/facebookpixel/facebookpixel.js
-
+src/js/facebookpixel/facebookpixel.js.map                                   js/facebookpixel/facebookpixel.js.map
