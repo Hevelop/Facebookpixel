@@ -2,6 +2,8 @@
     <default>
         <reference name="head" before="-">
             <block type="core/template" name="facebookpixel-jsconf" as="facebookpixel-jsconf" template="hevelop/facebookpixel/jsconfig.phtml"/>
+        </reference>
+        <reference  name="after_body_start">
             <block type="hevelop_facebookpixel/pixel" name="facebookpixel" as="facebookpixel" template="hevelop/facebookpixel/pixel.phtml"/>
         </reference>
         <reference name="before_body_end">
