@@ -60,8 +60,12 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }//end foreach
 
-            $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . $currCat->getName()
-                . "', content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            if (count($productIds) > 0) {
+                $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . addslashes($currCat->getName())
+                    . "', content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            } else {
+                $pixelCat = "";
+            }
         }
 
         return $pixelCat;
@@ -90,7 +94,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }//end foreach
 
-            $pixelSearch = "fbq('track', 'Search', {content_ids: " . json_encode($productIds) . ", content_type: 'product_group', search_string: " . json_encode($term) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            $pixelSearch = "fbq('track', 'Search', {content_ids: " . json_encode($productIds) . ", content_type: 'product_group', search_string: " . addslashes(json_encode($term)) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
         }
 
         return $pixelSearch;
@@ -227,9 +231,9 @@ class Hevelop_FacebookPixel_Block_Pixel extends
         if ($product = Mage::registry('product')) {
 
             $attributeCode = $this->helper->getAttributeCodeForCatalog();
-            $pixelProd     = "fbq('track', 'ViewContent', {content_name: '" . $product->getName() . "'";
+            $pixelProd     = "fbq('track', 'ViewContent', {content_name: '" . addslashes($product->getName()) . "'";
             if ($currCat = $this->getCurrentCategory()) {
-                $pixelProd .= ", content_category: '" . $currCat->getName() . "'";
+                $pixelProd .= ", content_category: '" . addslashes($currCat->getName()) . "'";
             }
 
             if ($attributeCode === false) {
