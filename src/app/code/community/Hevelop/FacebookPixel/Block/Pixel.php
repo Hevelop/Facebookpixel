@@ -10,7 +10,7 @@
  * @link     https://github.com/Hevelop/Facebookpixel
  */
 class Hevelop_FacebookPixel_Block_Pixel extends
- Mage_Core_Block_Template
+    Mage_Core_Block_Template
 {
 
     protected $helper;
@@ -62,7 +62,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
 
             if (count($productIds) > 0) {
                 $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . addslashes($currCat->getName())
-                    . "', content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+                    . "', content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product', "./*"product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . */"});";
             } else {
                 $pixelCat = "";
             }
@@ -94,7 +94,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }//end foreach
 
-            $pixelSearch = "fbq('track', 'Search', {content_ids: " . json_encode($productIds) . ", content_type: 'product_group', search_string: " . addslashes(json_encode($term)) . ", product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            $pixelSearch = "fbq('track', 'Search', {content_ids: " . json_encode($productIds) . ", content_type: 'product_group', search_string: " . addslashes(json_encode($term)) . ", "./*"product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . */"});";
         }
 
         return $pixelSearch;
@@ -242,7 +242,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 $productId = $product->getData($attributeCode);
             }
 
-            $pixelProd .= ", content_ids: ['" . $productId . "'], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
+            $pixelProd .= ", content_ids: ['" . $productId . "'], content_type: 'product', value: '" . $product->getPrice() . "', currency: '" . Mage::app()->getStore()->getBaseCurrencyCode() . "', "./*"product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . */"});";
         }
 
         return $pixelProd;
@@ -281,8 +281,8 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 'value', $order->getBaseGrandTotal(),
                 'currency', Mage::app()->getStore()->getBaseCurrencyCode(),
                 'num_items', count($order->getAllVisibleItems()),
-                'order_id', $order->getIncrementId(),
-                'product_catalog_id', Mage::helper('hevelop_facebookpixel')->getProductCatalogId()
+                'order_id', $order->getIncrementId()
+            //'product_catalog_id', Mage::helper('hevelop_facebookpixel')->getProductCatalogId()
             );
         }
 

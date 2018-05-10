@@ -119,8 +119,8 @@ class Hevelop_FacebookPixel_Model_Observer
             = Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART;
 
         if ($session->hasData(
-            Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART
-        ) === false
+                Hevelop_FacebookPixel_Helper_Data::PRODUCT_QUANTITIES_BEFORE_ADDTOCART
+            ) === false
         ) {
             $session->setData(
                 $dataKeyBeforeAddToCart,
@@ -138,7 +138,7 @@ class Hevelop_FacebookPixel_Model_Observer
      *
      * @param mixed $item       item to get product from
      * @param array $lastValues reference to parent code
-     * 
+     *
      * @return mixed $product
      * @throws Mage_Core_Model_Store_Exception
      */
@@ -149,7 +149,7 @@ class Hevelop_FacebookPixel_Model_Observer
         $parentQty        = 1;
         $price            = $item->getProduct()->getPrice();
         $baseCurrencyCode = Mage::app()->getStore()->getBaseCurrencyCode();
-        $productCatalogId = $this->helper->getProductCatalogId();
+        //$productCatalogId = $this->helper->getProductCatalogId();
         $attributeCode    = $this->helper->getAttributeCodeForCatalog();
 
         switch ($item->getProductType()) {
@@ -200,14 +200,14 @@ class Hevelop_FacebookPixel_Model_Observer
 
 
                     $product = array(
-                                'id'                 => $productId,
-                                'sku'                => $item->getSku(),
-                                'name'               => $item->getName(),
-                                'price'              => $price,
-                                'qty'                => $finalQty,
-                                'currency'           => $baseCurrencyCode,
-                                'product_catalog_id' => $productCatalogId,
-                               );
+                        'id'                 => $productId,
+                        'sku'                => $item->getSku(),
+                        'name'               => $item->getName(),
+                        'price'              => $price,
+                        'qty'                => $finalQty,
+                        'currency'           => $baseCurrencyCode
+                        //'product_catalog_id' => $productCatalogId,
+                    );
                 }//end if
         }//end switch
 
@@ -312,7 +312,7 @@ class Hevelop_FacebookPixel_Model_Observer
 
         $quoteItem = $observer->getEvent()->getQuoteItem();
         $simples   = $quoteItem->getChildren();
-        $catalogId = Mage::helper('hevelop_facebookpixel')->getProductCatalogId();
+        //$catalogId = Mage::helper('hevelop_facebookpixel')->getProductCatalogId();
 
         if (is_array($simples) === true
             && count($simples) > 0
@@ -320,22 +320,22 @@ class Hevelop_FacebookPixel_Model_Observer
         ) {
             foreach ($simples as $item) {
                 $products[] = array(
-                               'sku'                => $item->getSku(),
-                               'name'               => $item->getName(),
-                               'price'              => $item->getPrice(),
-                               'qty'                => $item->getQty(),
-                               'product_catalog_id' => $catalogId,
-                              );
+                    'sku'                => $item->getSku(),
+                    'name'               => $item->getName(),
+                    'price'              => $item->getPrice(),
+                    'qty'                => $item->getQty(),
+                    //'product_catalog_id' => $catalogId,
+                );
             }
         } else {
             $price      = $quoteItem->getProduct()->getPrice();
             $products[] = array(
-                           'sku'                => $quoteItem->getSku(),
-                           'name'               => $quoteItem->getName(),
-                           'price'              => $price,
-                           'qty'                => $quoteItem->getQty(),
-                           'product_catalog_id' => $catalogId,
-                          );
+                'sku'                => $quoteItem->getSku(),
+                'name'               => $quoteItem->getName(),
+                'price'              => $price,
+                'qty'                => $quoteItem->getQty(),
+                //'product_catalog_id' => $catalogId,
+            );
         }
 
         Mage::unregister('facebookpixel_products_to_remove');
