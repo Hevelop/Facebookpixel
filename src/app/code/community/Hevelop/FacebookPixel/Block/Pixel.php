@@ -61,7 +61,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
             }//end foreach
 
             if (count($productIds) > 0) {
-                $pixelCat = "fbq('track', 'ViewContent', {content_category: '" . addslashes($currCat->getName())
+                $pixelCat = "fbq('track', 'ViewCategory', {content_category: '" . addslashes($currCat->getName())
                     . "', content_ids: ['" . implode("','", $productIds) . "'], content_type: 'product', product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . "});";
             } else {
                 $pixelCat = "";
