@@ -50,7 +50,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
         $currCat       = $this->getCurrentCategory();
 
         if ($currCat && !Mage::registry('product')) {
-            $products   = $this->getProducts();
+            $products   = ($this->getProducts() === null) ? [] : $this->getProducts();
             $productIds = array();
             foreach ($products as $product) {
                 if ($attributeCode === false) {
