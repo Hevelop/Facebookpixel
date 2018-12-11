@@ -94,7 +94,7 @@ class Hevelop_FacebookPixel_Block_Pixel extends
                 }
             }//end foreach
 
-            $pixelSearch = "fbq('track', 'Search', {content_ids: " . json_encode($productIds) . ", content_type: 'product_group', search_string: " . addslashes(json_encode($term)) . ", "./*"product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . */"});";
+            $pixelSearch = "fbq('track', 'Search', {content_ids: " . json_encode($productIds) . ", content_type: 'product_group', search_string: " . json_encode($term) . ", "./*"product_catalog_id: " . Mage::helper('hevelop_facebookpixel')->getProductCatalogId() . */"});";
         }
 
         return $pixelSearch;
